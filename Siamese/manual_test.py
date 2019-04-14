@@ -4,7 +4,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from keras import models
 import os.path
-from model_development.Siamese.model import get_encoder, get_siamese
+from bipedResearch.Siamese.model import get_encoder, get_siamese
 
 PATH = os.getcwd()
 test_path = os.path.join(PATH, "/Test")

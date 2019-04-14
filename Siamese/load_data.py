@@ -9,7 +9,7 @@ from keras.applications.vgg16 import VGG16
 from keras import models
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
-from model_development.Siamese.model import get_encoder
+from bipedResearch.Siamese.model import get_encoder
 
 """Script to preprocess the sock dataset and pickle it into an array"""
 

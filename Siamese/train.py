@@ -1,10 +1,10 @@
 from keras.optimizers import SGD,Adam
 import os
-from model_development.Siamese.model import get_siamese
-from model_development.Siamese.Siamese_loader import Siamese_Loader
+from bipedModel.model import get_siamese
+from bipedResearch.Siamese.Siamese_loader import Siamese_Loader
 
 PATH = os.getcwd()
-weights_path = os.path.join(PATH, "model_weights.h5")
+weights_path = os.path.join(PATH, "../../bipedModel/model_weights.h5")
 
 model = get_siamese()
 model.summary()
@@ -14,7 +14,7 @@ loader = Siamese_Loader(PATH)
 
 evaluate_every = 10000  # interval for evaluating on one-shot tasks
 loss_every = 10000  # interval for printing loss (iterations)
-batch_size = 15
+batch_size = 14
 n_iter = 100000
 N_way = 5  # how many classes for testing one-shot tasks
 n_val = 1  # how many one-shot tasks to validate on?
