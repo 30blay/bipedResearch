@@ -30,7 +30,7 @@ def loadimgs(path):
     cat_dict = {}
     curr_y = 0
     model = get_encoder()
-    max_examples_per_cat = 5
+    max_examples_per_cat = 6
 
     # every sock has it's own column in the array, so load seperately
     for sockCat in os.listdir(path):

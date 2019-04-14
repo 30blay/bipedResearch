@@ -3,6 +3,8 @@ import numpy.random as rng
 import os
 import pickle
 from sklearn.utils import shuffle
+from sklearn.metrics import roc_curve
+import matplotlib.pyplot as plt
 
 
 class Siamese_Loader:
@@ -21,13 +23,13 @@ class Siamese_Loader:
                 self.data[name] = X
                 self.categories[name] = c
 
-    def get_batch(self, batch_size, s="train"):
+    def get_batch(self, batch_size, s="train", replace=False):
         """Create batch of n pairs, half same class, half different class"""
         X = self.data[s]
         n_classes, n_examples, feature_len = X.shape
 
         # randomly sample several classes to use in the batch
-        categories = rng.choice(n_classes, size=(batch_size,), replace=False)
+        categories = rng.choice(n_classes, size=(batch_size,), replace=replace)
         # initialize 2 empty arrays for the input image batch
         pairs = [np.zeros((batch_size, feature_len)) for i in range(2)]
         # initialize vector for the targets, and make one half of it '1's, so 2nd half of batch has same class
@@ -81,12 +83,35 @@ class Siamese_Loader:
         for i in range(k):
             inputs, targets = self.make_oneshot_task(N, s)
             probs = model.predict(inputs)
+
+            if verbose:
+                print("\nTrue category : {} ".format(self.categories[s][np.argmax(targets)]))
+                for candidate, prob in zip(self.categories[s], probs):
+                    print("{} : {}".format(self.categories[s][candidate], prob))
+
             if np.argmax(probs) == np.argmax(targets):
                 n_correct += 1
         percent_correct = (100.0 * n_correct / k)
         if verbose:
             print("Got an average of {}% {} way one-shot learning accuracy \n".format(percent_correct, N))
         return percent_correct
+
+    def show_roc(self, model, batch_size):
+        (inputs, targets) = self.get_batch(batch_size, s='val', replace=True)
+        target_pr = np.count_nonzero(targets)/len(targets)
+        prediction = model.predict(inputs)
+        fpr, tpr, thresholds = roc_curve(targets, prediction, pos_label=1)
+        fnr = np.ones(tpr.shape)-tpr
+        plt.figure()
+        plt.plot(thresholds, fnr, 'r', thresholds, fpr, 'g')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.0])
+        plt.xlabel('Threshold')
+        plt.ylabel('Error rate')
+        plt.title('Receiver operating characteristic')
+        plt.legend(['Pair but false', 'Different but true'], loc="lower right")
+        plt.show()
+
 
     def train(self, model, epochs, verbosity):
         model.fit_generator(self.generate(batch_size))
