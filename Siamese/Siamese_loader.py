@@ -5,6 +5,8 @@ import pickle
 from sklearn.utils import shuffle
 from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
+from keras.losses import binary_crossentropy
+from keras import backend as K
 
 
 class Siamese_Loader:
@@ -98,7 +100,6 @@ class Siamese_Loader:
 
     def show_roc(self, model, batch_size):
         (inputs, targets) = self.get_batch(batch_size, s='val', replace=True)
-        target_pr = np.count_nonzero(targets)/len(targets)
         prediction = model.predict(inputs)
         fpr, tpr, thresholds = roc_curve(targets, prediction, pos_label=1)
         fnr = np.ones(tpr.shape)-tpr
@@ -112,6 +113,13 @@ class Siamese_Loader:
         plt.legend(['Pair but false', 'Different but true'], loc="lower right")
         plt.show()
 
+    def validate(self, model, batch_size):
+        (inputs, targets) = self.get_batch(batch_size, s='val', replace=True)
+        prediction = model.predict(inputs)
+        y_true = K.variable(targets)
+        y_pred = K.variable(prediction.transpose())
+        loss = K.eval(binary_crossentropy(y_true, y_pred))
+        return loss[0]
 
     def train(self, model, epochs, verbosity):
         model.fit_generator(self.generate(batch_size))
