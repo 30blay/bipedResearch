@@ -52,10 +52,10 @@ class Siamese_Loader:
             pairs[1][i, :] = X[category_2, idx_2].reshape(feature_len)
         return pairs, targets
 
-    def generate(self, batch_size, s="train"):
+    def generate(self, batch_size, s="train", replace=False):
         """a generator for batches, so model.fit_generator can be used. """
         while True:
-            pairs, targets = self.get_batch(batch_size, s)
+            pairs, targets = self.get_batch(batch_size, s, replace=replace)
             yield (pairs, targets)
 
     def make_oneshot_task(self, N, s="val"):
@@ -77,7 +77,7 @@ class Siamese_Loader:
 
         return pairs, targets
 
-    def test_oneshot(self, model, N, k, s="val", verbose=0):
+    def test_oneshot(self, model, N, k, s="val", verbose=False):
         """Test average N way oneshot learning accuracy of a siamese neural net over k one-shot tasks"""
         n_correct = 0
         if verbose:
@@ -121,5 +121,7 @@ class Siamese_Loader:
         loss = K.eval(binary_crossentropy(y_true, y_pred))
         return loss[0]
 
-    def train(self, model, epochs, verbosity):
-        model.fit_generator(self.generate(batch_size))
+    def train(self, model, batch_size):
+        (inputs, targets) = self.get_batch(batch_size)
+        train_loss = model.train_on_batch(inputs, targets)
+        return train_loss
