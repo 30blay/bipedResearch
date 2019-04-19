@@ -13,9 +13,9 @@ model.summary()
 loader = Siamese_Loader(PATH)
 
 evaluate_every = 1000
-batch_size = 14
+batch_size = 18
 epochs = 25
-N_way = 5  # how many classes for testing one-shot tasks
+N_way = 6  # how many classes for testing one-shot tasks
 
 best = float("inf")
 print("Starting training process!")
@@ -37,5 +37,5 @@ plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['val', 'test'], loc='upper left')
+plt.legend(['train', 'val'], loc='upper left')
 plt.show()

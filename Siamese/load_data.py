@@ -1,15 +1,12 @@
 import sys
 import numpy as np
-from scipy.misc import imread
 import pickle
 import os
 import matplotlib.pyplot as plt
 import argparse
-from keras.applications.vgg16 import VGG16
-from keras import models
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
-from bipedResearch.Siamese.model import get_encoder
+from bipedModel.model import get_encoder
 
 """Script to preprocess the sock dataset and pickle it into an array"""
 
