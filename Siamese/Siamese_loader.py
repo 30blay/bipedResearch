@@ -75,7 +75,7 @@ class Siamese_Loader:
         targets, test_image, support_set = shuffle(targets, test_image, support_set)
         pairs = [test_image, support_set]
 
-        return pairs, targets
+        return pairs, targets, categories
 
     def test_oneshot(self, model, N, k, s="val", verbose=False):
         """Test average N way oneshot learning accuracy of a siamese neural net over k one-shot tasks"""
@@ -83,12 +83,12 @@ class Siamese_Loader:
         if verbose:
             print("Evaluating model on {} random {} way one-shot learning tasks ... \n".format(k, N))
         for i in range(k):
-            inputs, targets = self.make_oneshot_task(N, s)
+            inputs, targets, categories = self.make_oneshot_task(N, s)
             probs = model.predict(inputs)
 
             if verbose:
-                print("\nTrue category : {} ".format(self.categories[s][np.argmax(targets)]))
-                for candidate, prob in zip(self.categories[s], probs):
+                print("\nTrue category : {} ".format(self.categories[s][categories[np.argmax(targets)]]))
+                for candidate, prob in zip(categories, probs):
                     print("{} : {}".format(self.categories[s][candidate], prob))
 
             if np.argmax(probs) == np.argmax(targets):

@@ -8,14 +8,14 @@ weights_path = os.path.join(PATH, "../../bipedModel/model_weights.h5")
 
 model = get_siamese()
 model.summary()
-#model.load_weights(weights_path)
+model.load_weights(weights_path)
 
 loader = Siamese_Loader(PATH)
 
 evaluate_every = 1000
-batch_size = 18
-epochs = 25
-N_way = 6  # how many classes for testing one-shot tasks
+batch_size = 45
+epochs = 2
+N_way = 5  # how many classes for testing one-shot tasks
 
 best = float("inf")
 print("Starting training process!")
@@ -28,7 +28,7 @@ history = model.fit_generator(loader.generate(batch_size),
                               )
 
 model.save_weights(weights_path)
-percent_correct = loader.test_oneshot(model, 5, 500)
+percent_correct = loader.test_oneshot(model, 5, 1000, verbose=False)
 print("Got an average of {}% one-shot learning accuracy \n".format(percent_correct))
 loader.show_roc(model, 10000)
 
