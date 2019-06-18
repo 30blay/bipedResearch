@@ -1,18 +1,18 @@
 import os
 import matplotlib.pyplot as plt
-from bipedModel.model import get_siamese, weights_path
+from bipedModel.model import BipedModel, weights_path
 from bipedResearch.Siamese.Siamese_loader import Siamese_Loader
 
 PATH = os.getcwd()
 
-model = get_siamese(load_weights=False)
+model = BipedModel(load_weights=False).get_siamese()
 model.summary()
 
 loader = Siamese_Loader(PATH)
 
 evaluate_every = 1000
 batch_size = 45
-epochs = 20
+epochs = 10
 N_way = 5  # how many classes for testing one-shot tasks
 
 best = float("inf")
