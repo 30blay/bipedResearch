@@ -14,7 +14,6 @@ batch_size = 45
 epochs = 10
 N_way = 5  # how many classes for testing one-shot tasks
 
-best = float("inf")
 print("Starting validation process!")
 print("-------------------------------------")
 

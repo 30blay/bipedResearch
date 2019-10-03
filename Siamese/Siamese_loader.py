@@ -17,7 +17,7 @@ class Siamese_Loader:
             self.data = pd.read_pickle(data_file)
         else:
             self.load_images(path, feature_extractor)
-            self.data.to_pickle()
+            self.data.to_pickle(data_file)
 
         self.classes = self.data.sock_name.unique()
         self.n_classes = len(self.classes)
@@ -33,17 +33,15 @@ class Siamese_Loader:
         for i in range(batch_size):
             if targets[i] == 1:
                 # pick images of same class
-                sock_name = self.data.sock_name.unique().sample(1)
-                features = self.data[self.data.sock_name == sock_name].features.sample(2)
-                features_1 = features[0]
-                features_2 = features[1]
+                sock_name = pd.Series(self.data.sock_name.unique()).sample(1).iloc[0]
+                [features_1, features_2] = self.data[self.data.sock_name == sock_name].features.sample(2)
             else:
                 # pick images of different classes
-                sock_names = self.data.sock_name.unique().sample(2)
-                features_1 = self.data[self.data.sock_name == sock_names[0]].features.sample(1)
-                features_2 = self.data[self.data.sock_name == sock_names[1]].features.sample(1)
-            pairs[i, 0] = features_1
-            pairs[i, 1] = features_2
+                sock_names = pd.Series(self.data.sock_name.unique()).sample(2)
+                features_1 = self.data[self.data.sock_name == sock_names.iloc[0]].features.sample(1).values[0]
+                features_2 = self.data[self.data.sock_name == sock_names.iloc[1]].features.sample(1).values[0]
+            pairs[i, 0, :] = features_1
+            pairs[i, 1, :] = features_2
         return pairs, targets
 
     def generate(self, batch_size, s="train", replace=False):
@@ -54,10 +52,11 @@ class Siamese_Loader:
 
     def make_oneshot_task(self, N, s="val"):
         """Create pairs of test image, support set for testing N way one-shot learning. """
-        true_class = self.classes.sample(1)
+        true_class = pd.Series(self.data.sock_name.unique()).sample(1).iloc[0]
 
         [test_features, true_features] = self.data[self.data.sock_name == true_class].features.sample(2)
-        other_features = self.data[self.data.sock_name != true_class].features.sample(N-1)
+        other_features = self.data[self.data.sock_name != true_class].sample(N-1).features
+        other_features = np.array(other_features.to_list())
 
         targets = np.zeros((N,))
         targets[0] = 1
@@ -75,7 +74,7 @@ class Siamese_Loader:
             print("Evaluating model on {} random {} way one-shot learning tasks ... \n".format(k, N))
         for i in range(k):
             inputs, targets = self.make_oneshot_task(N, s)
-            probs = model.get_similarity(inputs)
+            probs = [model.get_similarity(x[0], x[1]) for x in inputs]
 
             if np.argmax(probs) == np.argmax(targets):
                 n_correct += 1
@@ -86,7 +85,7 @@ class Siamese_Loader:
 
     def show_roc(self, model, batch_size):
         (inputs, targets) = self.get_batch(batch_size)
-        prediction = model.predict(inputs)
+        prediction = [model.get_similarity(x[0], x[1]) for x in inputs]
         fpr, tpr, thresholds = roc_curve(targets, prediction, pos_label=1)
         fnr = np.ones(tpr.shape)-tpr
         plt.figure()
