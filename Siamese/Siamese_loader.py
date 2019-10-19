@@ -1,22 +1,28 @@
 import numpy as np
-import numpy.random as rng
 import os
-import pickle
-from sklearn.utils import shuffle
 from sklearn.metrics import roc_curve, log_loss
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 
 
-class Siamese_Loader:
+class SiameseLoader:
     """For loading batches and testing tasks to a siamese net"""
 
-    def __init__(self, path, feature_extractor, data_file='loader_data.pickle'):
+    def __init__(self, path, model, data_file='loader_data.pickle', update_isolated=False, update_features=True):
+        self.isolation_func = model.isolate_sock
+        self.feature_func = model.histogram
+
         if os.path.isfile(data_file):
             self.data = pd.read_pickle(data_file)
+            if update_isolated:
+                self.update_isolated()
+            if update_features:
+                self.update_features()
         else:
-            self.load_images(path, feature_extractor)
+            self.load_images(path)
+            self.update_isolated()
+            self.update_features()
             self.data.to_pickle(data_file)
 
         self.classes = self.data.sock_name.unique()
@@ -106,7 +112,7 @@ class Siamese_Loader:
         loss = log_loss(y_true, y_pred)
         return loss
 
-    def load_images(self, path, feature_extractor):
+    def load_images(self, path):
         # loop through every sock, every image, and build a pandas DataFrame
         data = []
         for sock_dir in os.listdir(path):
@@ -118,4 +124,9 @@ class Siamese_Loader:
                     'img_path': img_path,
                 })
         self.data = pd.DataFrame(data)
-        self.data['features'] = [feature_extractor(img_path) for img_path in tqdm(self.data.img_path)]
+
+    def update_isolated(self):
+        self.data['isolated'] = [self.isolation_func(img_path) for img_path in tqdm(self.data.img_path)]
+
+    def update_features(self):
+        self.data['features'] = [self.feature_func(isolated) for isolated in tqdm(self.data.isolated)]
