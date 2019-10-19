@@ -9,6 +9,9 @@ __pycache__/
 # Image files
 *.JPG
 
+# Temporary
+*.pickle
+
 # Distribution / packaging
 .Python
 env/
